@@ -1,3 +1,4 @@
+package br.com.hospital;
 import java.util.Scanner;
 
 public class Main {
@@ -21,7 +22,9 @@ public class Main {
                     
                     5. Para agendamento\
                     
-                    6. Para sair""");
+                    6. Para deletar\
+                    
+                    . Para sair""");
             opcao = input.nextInt();
             switch (opcao) {
                 case 1:
@@ -34,14 +37,16 @@ public class Main {
                     medico.getListaMedica();
                     break;
                 case 4:
-                    paciente.getlistaPaciente();
+                    paciente.getListaPaciente();
                     break;
                 case 5:
 
                     break;
-
+                case 6:
+                    medico.deletarMedico();
+                    break;
             }
-        } while (opcao != 6);
+        } while (opcao != 7);
         System.out.println("Obrigado por utilizar.");
     }
 }
