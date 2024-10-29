@@ -1,4 +1,5 @@
 package br.com.hospital;
+
 import java.util.Scanner;
 
 public class Main {
@@ -10,43 +11,21 @@ public class Main {
 
         do {
             System.out.println("""
-                    \nEscolha uma opção\
-                    
-                    1. Para cadastrar médico\
-                    
-                    2. Para cadastrar paciente\
-                    
-                    3. Para verificar os médico\
-                    
-                    4. Para verificar os pacientes\
-                    
-                    5. Para agendamento\
-                    
-                    6. Para deletar\
-                    
-                    . Para sair""");
+                    Escolha uma opção:
+                    1. Para Médico
+                    2. Para Paciente
+                    0. Para Sair""");
+
             opcao = input.nextInt();
             switch (opcao) {
                 case 1:
-                    medico.cadastrarMedico();
+                    medico.menuMedico();
                     break;
                 case 2:
-                    paciente.cadastraPaciente();
-                    break;
-                case 3:
-                    medico.getListaMedica();
-                    break;
-                case 4:
-                    paciente.getListaPaciente();
-                    break;
-                case 5:
-
-                    break;
-                case 6:
-                    medico.deletarMedico();
+                    paciente.menuPaciente();
                     break;
             }
-        } while (opcao != 7);
+        } while (opcao != 0);
         System.out.println("Obrigado por utilizar.");
     }
 }

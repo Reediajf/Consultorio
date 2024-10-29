@@ -1,20 +1,22 @@
 package br.com.hospital;
-import java.util.Scanner;
+
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Medico {
-    ArrayList<String> listaMedica = new ArrayList<>();
-    private static int contadorId = 1; // Contador estático para ID
+    private final ArrayList<String> listaMedica = new ArrayList<>();
+    private static int contadorId = 1;
     private int idMedico;
     private String nome;
     private String telefone;
     private String crm;
     private String periodoAtendimento;
     private String especialidade;
-    Scanner input = new Scanner(System.in);
+    private final Scanner input = new Scanner(System.in);
 
     public void cadastrarMedico() {
-        this.idMedico = contadorId++; // Atribui o ID e incrementa o contador
+        this.idMedico = contadorId++;
+        input.nextLine();
 
         // Entrada para o nome
         while (true) {
@@ -23,7 +25,7 @@ public class Medico {
             if (nome.isEmpty()) {
                 System.out.println("Por favor, digite algo.");
             } else {
-                break; // Sai do loop se um nome válido for digitado
+                break;
             }
         }
 
@@ -34,7 +36,7 @@ public class Medico {
             if (crm.isEmpty()) {
                 System.out.println("Por favor, digite um CRM válido.");
             } else {
-                break; // Sai do loop se um CRM válido for digitado
+                break;
             }
         }
 
@@ -45,7 +47,7 @@ public class Medico {
             if (especialidade.isEmpty()) {
                 System.out.println("Por favor, digite uma especialidade válida.");
             } else {
-                break; // Sai do loop se uma especialidade válida for digitada
+                break;
             }
         }
 
@@ -56,7 +58,7 @@ public class Medico {
             if (telefone.isEmpty()) {
                 System.out.println("Por favor, digite um telefone válido.");
             } else {
-                break; // Sai do loop se um telefone válido for digitado
+                break;
             }
         }
 
@@ -67,7 +69,7 @@ public class Medico {
             if (periodoAtendimento.isEmpty()) {
                 System.out.println("Por favor, digite um período de atendimento válido.");
             } else {
-                break; // Sai do loop se um período válido for digitado
+                break;
             }
         }
 
@@ -75,14 +77,155 @@ public class Medico {
         System.out.println("Médico cadastrado com sucesso!");
     }
 
-    @Override
-    public String toString() {
-        return "Médico ID: " + idMedico +
-                "\nNome: " + nome +
-                "\nTelefone: " + telefone +
-                "\nCRM: " + crm +
-                "\nPeríodo de Atendimento: " + periodoAtendimento +
-                "\nEspecialidade: " + especialidade;
+    public void menuMedico() {
+        int entrada;
+        do {
+            System.out.println("""
+                    1. Para cadastrar Médico
+                    2. Para excluir Médico
+                    3. Para consultar Médico
+                    4. Para Alterar Médico
+                    0. Para sair.""");
+            entrada = input.nextInt();
+            switch (entrada) {
+                case 1:
+                    cadastrarMedico();
+                    break;
+                case 2:
+                    deletarMedico();
+                    break;
+                case 3:
+                    getListaMedica();
+                    break;
+                case 4:
+                    alterarMedico();
+                    break;
+            }
+        } while (entrada != 0);
+        System.out.println("Obrigado por utilizar.");
+    }
+
+    private void deletarMedico() {
+        while (true) {
+            System.out.println("Digite o número identificador para deletar(id): ");
+            int deleteId = input.nextInt();
+            if (deleteId >= listaMedica.size()) {
+                System.out.println("Médico não encontrado");
+            } else {
+                listaMedica.remove(deleteId);
+                System.out.println("Médico deletado com sucesso!");
+                break;
+            }
+        }
+    }
+
+    private void alterarMedico() {
+        while (true) {
+            System.out.println("Digite o número identificador para alterar (ID): ");
+            int alterarId = input.nextInt();
+            input.nextLine(); // Limpa o buffer do scanner
+
+            // Verifica se o ID é válido
+            if (alterarId <= 0 || alterarId > listaMedica.size()) {
+                System.out.println("Médico não encontrado");
+            } else {
+                // Recupera o médico correspondente ao ID
+                String medicoString = listaMedica.get(alterarId - 1);
+                String[] dadosMedico = medicoString.split("\n");
+
+                // Exibe os dados atuais do médico
+                System.out.println("Dados atuais do médico:");
+                for (String dado : dadosMedico) {
+                    System.out.println(dado);
+                }
+
+                // Menu para escolha do que alterar
+                System.out.println("""
+                        Escolha uma opção:
+                        1. Para nome do médico
+                        2. Para Telefone
+                        3. Para CRM
+                        4. Para Período de atendimento
+                        5. Para Especialidade
+                        0. Para sair""");
+
+                int entradaAlterar = input.nextInt();
+                input.nextLine(); // Limpa o buffer do scanner
+
+                switch (entradaAlterar) {
+                    case 1:
+                        while (true) {
+                            System.out.print("Digite o novo nome: ");
+                            this.nome = input.nextLine();
+                            if (nome.isEmpty()) {
+                                System.out.println("Por favor, digite o novo nome.");
+                            } else {
+                                break;
+                            }
+                        }
+                        break;
+
+                    case 2:
+                        while (true) {
+                            System.out.print("Digite o novo telefone: ");
+                            this.telefone = input.nextLine();
+                            if (telefone.isEmpty()) {
+                                System.out.println("Por favor, digite o novo telefone.");
+                            } else {
+                                break;
+                            }
+                        }
+                        break;
+
+                    case 3:
+                        while (true) {
+                            System.out.print("Digite o novo CRM: ");
+                            this.crm = input.nextLine();
+                            if (crm.isEmpty()) {
+                                System.out.println("Por favor, digite o novo CRM.");
+                            } else {
+                                break;
+                            }
+                        }
+                        break;
+
+                    case 4:
+                        while (true) {
+                            System.out.print("Digite o novo período de atendimento: ");
+                            this.periodoAtendimento = input.nextLine();
+                            if (periodoAtendimento.isEmpty()) {
+                                System.out.println("Por favor, digite um novo período de atendimento.");
+                            } else {
+                                break;
+                            }
+                        }
+                        break;
+
+                    case 5:
+                        while (true) {
+                            System.out.print("Digite a nova especialidade: ");
+                            this.especialidade = input.nextLine();
+                            if (especialidade.isEmpty()) {
+                                System.out.println("Por favor, digite uma nova especialidade.");
+                            } else {
+                                break;
+                            }
+                        }
+                        break;
+
+                    case 0:
+                        return; // Sai do método
+                    default:
+                        System.out.println("Opção inválida.");
+                }
+
+                // Atualiza a listaMedica
+                listaMedica.set(alterarId - 1, toString());
+
+                System.out.println("Médico alterado com sucesso!");
+                break; // Sai do loop após a alteração
+            }
+        }
     }
 
     public void getListaMedica() {
@@ -90,17 +233,14 @@ public class Medico {
             System.out.printf("\n\n%s\n\n", medico);
         }
     }
-public void deletarMedico() {
-    while (true) {
-        System.out.println("Digite o número identificador para deletar(id): ");
-        int deleteId = input.nextInt();
-        if (deleteId >= listaMedica.size()) {
-            System.out.println("Medico não encontrado");
-        } else {
-            listaMedica.remove(deleteId);
-            System.out.println("Medico deletado com sucesso!");
-            break;
-        }
+
+    @Override
+    public String toString() {
+        return "Médico ID: " + idMedico +
+               "\nNome: " + nome +
+               "\nTelefone: " + telefone +
+               "\nCRM: " + crm +
+               "\nPeríodo de Atendimento: " + periodoAtendimento +
+               "\nEspecialidade: " +  especialidade + "\n";
     }
-}
 }
