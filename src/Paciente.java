@@ -1,5 +1,3 @@
-package br.com.hospital;
-
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -94,13 +92,13 @@ public class Paciente {
         int entrada;
         do {
             System.out.println("""
-                    1. Para cadastrar paciente
-                    2. Para excluir paciente
-                    3. Para lista de paciente
-                    4. Para Alterar paciente
-                    5. Para agendar consulta
-                    6. Para listar agendamentos
-                    0. Para sair.""");
+                    1. Para Cadastrar paciente
+                    2. Para Excluir paciente
+                    3. Para Lista de paciente
+                    4. Para Alterar dados paciente
+                    5. Para Agendar consulta
+                    6. Para Listar agendamentos
+                    0. Para Voltar.""");
             entrada = input.nextInt();
             switch (entrada) {
                 case 1:
@@ -119,7 +117,7 @@ public class Paciente {
                     // Aqui você precisa passar a lista de médicos que deseja agendar
                     break;
                 case 6:
-                    // Aqui você coloca o método listarAgendamento
+//                     Aqui você coloca o métodos agendamento
                     break;
             }
         } while (entrada != 0);
@@ -178,7 +176,7 @@ public class Paciente {
                         4. Para Data de Nascimento
                         5. Para Email
                         6. Para Telefone
-                        0. Para sair""");
+                        0. Para Voltar""");
 
                 int entradaAlterar = input.nextInt();
                 input.nextLine(); // Limpa o buffer do scanner
@@ -274,11 +272,11 @@ public class Paciente {
     @Override
     public String toString() {
         return "Paciente ID: " + idPaciente +
-               "\nNome: " + nome +
-               "\nCPF: " + cpf +
-               "\nSexo: " + sexo +
-               "\nNascimento: " + nascimento +
-               "\nEmail: " + email +
-               "\nTelefone:\n " + telefone + "\n";
+                "\nNome: " + nome +
+                "\nCPF: " + cpf +
+                "\nSexo: " + sexo +
+                "\nNascimento: " + nascimento +
+                "\nEmail: " + email +
+                "\nTelefone:\n " + telefone + "\n";
     }
 }

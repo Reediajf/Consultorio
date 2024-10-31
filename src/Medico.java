@@ -1,5 +1,3 @@
-package br.com.hospital;
-
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -81,11 +79,11 @@ public class Medico {
         int entrada;
         do {
             System.out.println("""
-                    1. Para cadastrar Médico
-                    2. Para excluir Médico
-                    3. Para consultar Médico
+                    1. Para Cadastrar Médico
+                    2. Para Excluir Médico
+                    3. Para Consultar Médico
                     4. Para Alterar Médico
-                    0. Para sair.""");
+                    0. Para Voltar.""");
             entrada = input.nextInt();
             switch (entrada) {
                 case 1:
@@ -147,7 +145,7 @@ public class Medico {
                         3. Para CRM
                         4. Para Período de atendimento
                         5. Para Especialidade
-                        0. Para sair""");
+                        0. Para Voltar""");
 
                 int entradaAlterar = input.nextInt();
                 input.nextLine(); // Limpa o buffer do scanner
@@ -237,10 +235,10 @@ public class Medico {
     @Override
     public String toString() {
         return "Médico ID: " + idMedico +
-               "\nNome: " + nome +
-               "\nTelefone: " + telefone +
-               "\nCRM: " + crm +
-               "\nPeríodo de Atendimento: " + periodoAtendimento +
-               "\nEspecialidade: " +  especialidade + "\n";
+                "\nNome: " + nome +
+                "\nTelefone: " + telefone +
+                "\nCRM: " + crm +
+                "\nPeríodo de Atendimento: " + periodoAtendimento +
+                "\nEspecialidade: " + especialidade + "\n";
     }
 }

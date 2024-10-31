@@ -1,5 +1,3 @@
-package br.com.hospital;
-
 import java.util.Scanner;
 
 public class Main {
