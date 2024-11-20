@@ -1,242 +1,198 @@
 package br.com.consultorio;
 
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Medico {
-    private static final ArrayList<String> listaMedica = new ArrayList<>();
-    private static int contadorId = 1;
+    Scanner input;
     private int idMedico;
     private String nome;
     private String telefone;
     private String crm;
     private String periodoAtendimento;
     private String especialidade;
-    private final Scanner input = new Scanner(System.in);
 
+
+    // Metodo para estabelecer a conexão com o banco de dados
+    private static Connection conexao;
+
+    public Medico(Scanner input) {
+        this.input = input;
+    }
+
+    public Medico() {
+
+    }
+
+    private static void init() {
+        if (conexao == null) {
+            try {
+                conexao = DriverManager.getConnection(
+                        "jdbc:mysql://localhost:3306/consultorio",
+                        "dt",
+                        "admin"
+                );
+                System.out.println("Conexão estabelecida com sucesso!");
+            } catch (SQLException e) {
+                System.out.println("Erro ao conectar ao banco de dados: " + e.getMessage());
+            }
+        }
+    }
+
+    private static Connection getConnection() {
+        init();
+        return conexao;
+    }
+
+    // Metodo para cadastrar um médico no banco de dados
     public void cadastrarMedico() {
-        this.idMedico = contadorId++;
-        input.nextLine();
+        this.nome = getStringInput("Digite o nome do médico: ");
+        this.crm = getStringInput("Digite o CRM: ");
+        this.especialidade = getStringInput("Digite a especialidade: ");
+        this.telefone = getStringInput("Digite o telefone: ");
+        this.periodoAtendimento = getStringInput("Digite o período de atendimento: ");
 
-        // Entrada para o nome
-        while (true) {
-            System.out.print("Digite o nome do médico: ");
-            this.nome = input.nextLine();
-            if (nome.isEmpty()) {
-                System.out.println("Por favor, digite algo.");
+        String sql = "INSERT INTO medico (nomeMedico, telefone, crm, periodoAtendimento, especialidade) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, nome);
+            stmt.setString(2, telefone);
+            stmt.setString(3, crm);
+            stmt.setString(4, periodoAtendimento);
+            stmt.setString(5, especialidade);
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Médico cadastrado com sucesso!");
             } else {
-                break;
+                System.out.println("Erro ao cadastrar o médico!");
             }
-        }
-
-        // Entrada para o CRM
-        while (true) {
-            System.out.print("Digite o CRM: ");
-            this.crm = input.nextLine();
-            if (crm.isEmpty()) {
-                System.out.println("Por favor, digite um CRM válido.");
-            } else {
-                break;
-            }
-        }
-
-        // Entrada para a especialidade
-        while (true) {
-            System.out.print("Digite a especialidade: ");
-            this.especialidade = input.nextLine();
-            if (especialidade.isEmpty()) {
-                System.out.println("Por favor, digite uma especialidade válida.");
-            } else {
-                break;
-            }
-        }
-
-        // Entrada para o telefone
-        while (true) {
-            System.out.print("Digite o telefone: ");
-            this.telefone = input.nextLine();
-            if (telefone.isEmpty()) {
-                System.out.println("Por favor, digite um telefone válido.");
-            } else {
-                break;
-            }
-        }
-
-        // Entrada para o período de atendimento
-        while (true) {
-            System.out.print("Digite o período de atendimento: ");
-            this.periodoAtendimento = input.nextLine();
-            if (periodoAtendimento.isEmpty()) {
-                System.out.println("Por favor, digite um período de atendimento válido.");
-            } else {
-                break;
-            }
-        }
-
-        listaMedica.add(toString());
-        System.out.println("Médico cadastrado com sucesso!");
-    }
-
-    public void menuMedico() {
-        int entrada;
-        do {
-            System.out.println("""
-                    1. Para Cadastrar Médico
-                    2. Para Excluir Médico
-                    3. Para Consultar Médico
-                    4. Para Alterar Médico
-                    0. Para Voltar.""");
-            entrada = input.nextInt();
-            switch (entrada) {
-                case 1:
-                    cadastrarMedico();
-                    break;
-                case 2:
-                    deletarMedico();
-                    break;
-                case 3:
-                    getListaMedica();
-                    break;
-                case 4:
-                    alterarMedico();
-                    break;
-            }
-        } while (entrada != 0);
-        System.out.println("Obrigado por utilizar.");
-    }
-
-    private void deletarMedico() {
-        while (true) {
-            System.out.println("Digite o número identificador para deletar(id): ");
-            int deleteId = input.nextInt();
-            if (deleteId >= listaMedica.size()) {
-                System.out.println("Médico não encontrado");
-            } else {
-                listaMedica.remove(deleteId);
-                System.out.println("Médico deletado com sucesso!");
-                break;
-            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
-    private void alterarMedico() {
-        while (true) {
-            System.out.println("Digite o número identificador para alterar (ID): ");
-            int alterarId = input.nextInt();
-            input.nextLine(); // Limpa o buffer do scanner
-
-            // Verifica se o ID é válido
-            if (alterarId <= 0 || alterarId > listaMedica.size()) {
-                System.out.println("Médico não encontrado");
-            } else {
-                // Recupera o médico correspondente ao ID
-                String medicoString = listaMedica.get(alterarId - 1);
-                String[] dadosMedico = medicoString.split("\n");
-
-                // Exibe os dados atuais do médico
-                System.out.println("Dados atuais do médico:");
-                for (String dado : dadosMedico) {
-                    System.out.println(dado);
-                }
-
-                // Menu para escolha do que alterar
-                System.out.println("""
-                        Escolha uma opção:
-                        1. Para nome do médico
-                        2. Para Telefone
-                        3. Para CRM
-                        4. Para Período de atendimento
-                        5. Para Especialidade
-                        0. Para Voltar""");
-
-                int entradaAlterar = input.nextInt();
-                input.nextLine(); // Limpa o buffer do scanner
-
-                switch (entradaAlterar) {
-                    case 1:
-                        while (true) {
-                            System.out.print("Digite o novo nome: ");
-                            this.nome = input.nextLine();
-                            if (nome.isEmpty()) {
-                                System.out.println("Por favor, digite o novo nome.");
-                            } else {
-                                break;
-                            }
-                        }
-                        break;
-
-                    case 2:
-                        while (true) {
-                            System.out.print("Digite o novo telefone: ");
-                            this.telefone = input.nextLine();
-                            if (telefone.isEmpty()) {
-                                System.out.println("Por favor, digite o novo telefone.");
-                            } else {
-                                break;
-                            }
-                        }
-                        break;
-
-                    case 3:
-                        while (true) {
-                            System.out.print("Digite o novo CRM: ");
-                            this.crm = input.nextLine();
-                            if (crm.isEmpty()) {
-                                System.out.println("Por favor, digite o novo CRM.");
-                            } else {
-                                break;
-                            }
-                        }
-                        break;
-
-                    case 4:
-                        while (true) {
-                            System.out.print("Digite o novo período de atendimento: ");
-                            this.periodoAtendimento = input.nextLine();
-                            if (periodoAtendimento.isEmpty()) {
-                                System.out.println("Por favor, digite um novo período de atendimento.");
-                            } else {
-                                break;
-                            }
-                        }
-                        break;
-
-                    case 5:
-                        while (true) {
-                            System.out.print("Digite a nova especialidade: ");
-                            this.especialidade = input.nextLine();
-                            if (especialidade.isEmpty()) {
-                                System.out.println("Por favor, digite uma nova especialidade.");
-                            } else {
-                                break;
-                            }
-                        }
-                        break;
-
-                    case 0:
-                        return; // Sai do método
-                    default:
-                        System.out.println("Opção inválida.");
-                }
-
-                // Atualiza a listaMedica
-                listaMedica.set(alterarId - 1, toString());
-
-                System.out.println("Médico alterado com sucesso!");
-                break; // Sai do loop após a alteração
-            }
-        }
-    }
-
+    // Metodo para listar médicos cadastrados no banco de dados
     public static List<Medico> getListaMedica() {
-        for (String medico : listaMedica) {
-            System.out.printf("\n\n%s\n\n", medico);
+        List<Medico> medicos = new ArrayList<>();
+        String sql = "SELECT * FROM medico";
+
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Medico medico = new Medico();
+                medico.idMedico = rs.getInt("idMedico");
+                medico.nome = rs.getString("nomeMedico");
+                medico.crm = rs.getString("crm");
+                medico.especialidade = rs.getString("especialidade");
+                medico.telefone = rs.getString("telefone");
+                medico.periodoAtendimento = rs.getString("periodoAtendimento");
+                medicos.add(medico);
+            }
+
+            if (medicos.isEmpty()) {
+                System.out.println("Nenhum médico cadastrado no banco de dados.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return null;
+        return medicos;
     }
 
+    // Metodo para excluir médico do banco de dados
+    public void deletarMedico() {
+        int deleteId = getIntInput("Digite o ID do médico para deletar: ");
+        String sql = "DELETE FROM medico WHERE idMedico = ?";
 
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, deleteId);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Médico removido com sucesso!");
+            } else {
+                System.out.println("Médico não encontrado no banco de dados.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Metodo para alterar dados do médico
+    public void alterarMedico() {
+        int alterarId = getIntInput("Digite o ID do médico para alterar: ");
+        String nomeNovo = getStringInput("Digite o novo nome (deixe em branco para não alterar): ");
+        String crmNovo = getStringInput("Digite o novo CRM (deixe em branco para não alterar): ");
+        String especialidadeNova = getStringInput("Digite a nova especialidade (deixe em branco para não alterar): ");
+        String telefoneNovo = getStringInput("Digite o novo telefone (deixe em branco para não alterar): ");
+        String periodoNovo = getStringInput("Digite o novo período de atendimento (deixe em branco para não alterar): ");
+
+        StringBuilder sql = new StringBuilder("UPDATE medico SET ");
+
+        if (!nomeNovo.isEmpty()) sql.append("nomeMedico = ?, ");
+        if (!crmNovo.isEmpty()) sql.append("crm = ?, ");
+        if (!especialidadeNova.isEmpty()) sql.append("especialidade = ?, ");
+        if (!telefoneNovo.isEmpty()) sql.append("telefone = ?, ");
+        if (!periodoNovo.isEmpty()) sql.append("periodoAtendimento = ?, ");
+
+        sql.delete(sql.length() - 2, sql.length());  // Remove a última vírgula
+        sql.append(" WHERE idMedico = ?");
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+            if (!nomeNovo.isEmpty()) stmt.setString(index++, nomeNovo);
+            if (!crmNovo.isEmpty()) stmt.setString(index++, crmNovo);
+            if (!especialidadeNova.isEmpty()) stmt.setString(index++, especialidadeNova);
+            if (!telefoneNovo.isEmpty()) stmt.setString(index++, telefoneNovo);
+            if (!periodoNovo.isEmpty()) stmt.setString(index++, periodoNovo);
+            stmt.setInt(index, alterarId);
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Médico alterado com sucesso!");
+            } else {
+                System.out.println("Médico não encontrado no banco de dados.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Métodos auxiliares para obter input do usuário
+    private String getStringInput(String prompt) {
+        String inputStr = "";
+        while (inputStr.isEmpty()) {
+            System.out.print(prompt);
+            inputStr = input.nextLine();
+        }
+        return inputStr;
+    }
+
+    private int getIntInput(String prompt) {
+        int inputInt = -1;
+        while (inputInt < 0) {
+            System.out.print(prompt);
+            if (input.hasNextInt()) {
+                inputInt = input.nextInt();
+            } else {
+                System.out.println("Entrada inválida! Por favor, digite um número.");
+                input.nextLine(); // Limpa o buffer
+            }
+        }
+        return inputInt;
+    }
+
+    // Metodo toString para exibir informações do médico
     @Override
     public String toString() {
         return "Médico ID: " + idMedico +
@@ -247,4 +203,48 @@ public class Medico {
                 "\nEspecialidade: " + especialidade + "\n";
     }
 
+    // Método para exibir o menu de opções
+    public void Menu() {
+        while (true) {
+            System.out.println("""
+                    Qual opção deseja?
+                    1 - Cadastrar médico
+                    2 - Alterar médico
+                    3 - Deletar médico
+                    4 - Mostrar médicos""");
+            int opcaoMenu = input.nextInt();
+            switch (opcaoMenu) {
+                case 1:
+                    cadastrarMedico();
+                    break;
+                case 2:
+                    alterarMedico();
+                    break;
+                case 3:
+                    deletarMedico();
+                    break;
+                case 4:
+                    mostrarMedicos();
+                    break;
+                default:
+                    System.out.println("Obrigado por usar!");
+                    break;
+            }
+        }
+    }
+
+    // Método para exibir médicos cadastrados
+    public static void mostrarMedicos() {
+        List<Medico> medicos = getListaMedica();
+        if (!medicos.isEmpty()) {
+            System.out.println("\nID \t Nome \t\t CRM \t\t Especialidade \t\t Telefone \t\t Período");
+            for (Medico medico : medicos) {
+                System.out.println(medico);
+            }
+        }
+    }
+
+    public int getIdMedico() {
+        return idMedico;
+    }
 }

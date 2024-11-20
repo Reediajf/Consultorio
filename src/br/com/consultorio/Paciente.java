@@ -1,12 +1,12 @@
 package br.com.consultorio;
-import java.util.ArrayList;
 
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Paciente {
-    private static final ArrayList<String> listaPaciente = new ArrayList<>();
-    private static int contadorPaciente = 1;
+    Scanner input;
     private int idPaciente;
     private String nome;
     private String cpf;
@@ -14,282 +14,246 @@ public class Paciente {
     private String nascimento;
     private String email;
     private String telefone;
-    private final Scanner input = new Scanner(System.in);
+
     Agendar agendamento = new Agendar();
-    // Métodos públicos
+
+    // Definir conexão única
+    private static Connection conexao;
+
+    public Paciente(Scanner input) {
+        this.input = input;
+    }
+
+    public Paciente() {
+        
+    }
+
+    // Inicializa a conexão ao banco de dados
+    private static void init() {
+        if (conexao == null) {
+            try {
+                conexao = DriverManager.getConnection(
+                        "jdbc:mysql://localhost:3306/consultorio",
+                        "dt",
+                        "admin"
+                );
+                System.out.println("Conexão estabelecida com sucesso!");
+            } catch (SQLException e) {
+                System.out.println("Erro ao conectar ao banco de dados: " + e.getMessage());
+            }
+        }
+    }
+
+    // Método para obter a conexão
+    private static Connection getConnection() {
+        init();
+        return conexao;
+    }
+
+    // Método para cadastrar paciente no banco de dados
     public void cadastraPaciente() {
-        this.idPaciente = contadorPaciente++;
-        input.nextLine();
+        this.nome = getStringInput("Digite o nome do paciente: ");
+        this.cpf = getStringInput("Digite o CPF: ");
+        this.sexo = getStringInput("Digite o sexo: ");
+        this.nascimento = getStringInput("Digite a data de nascimento (yyyy-MM-dd): ");
+        this.email = getStringInput("Digite o email: ");
+        this.telefone = getStringInput("Digite o telefone: ");
 
-        // Entrada para o nome
-        while (true) {
-            System.out.print("Digite o nome do paciente: ");
-            this.nome = input.nextLine();
-            if (nome.isEmpty()) {
-                System.out.println("Por favor, digite um nome válido.");
+        // Conectar ao banco e inserir os dados do paciente
+        String sql = "INSERT INTO paciente (nomePaciente, cpf, sexo, nascimento, email, telefone) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, nome);
+            stmt.setString(2, cpf);
+            stmt.setString(3, sexo);
+            stmt.setString(4, nascimento);
+            stmt.setString(5, email);
+            stmt.setString(6, telefone);
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Paciente cadastrado com sucesso no banco de dados!");
             } else {
-                break;
+                System.out.println("Erro ao cadastrar paciente no banco de dados.");
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-
-        // Entrada para o CPF
-        while (true) {
-            System.out.print("Digite o CPF: ");
-            this.cpf = input.nextLine();
-            if (cpf.isEmpty()) {
-                System.out.println("Por favor, digite um CPF válido.");
-            } else {
-                break;
-            }
-        }
-
-        // Entrada para o sexo
-        while (true) {
-            System.out.print("Digite o sexo: ");
-            this.sexo = input.nextLine();
-            if (sexo.isEmpty()) {
-                System.out.println("Por favor, digite um sexo válido.");
-            } else {
-                break;
-            }
-        }
-
-        // Entrada para a data de nascimento
-        while (true) {
-            System.out.print("Digite a data de nascimento (dd/MM/yyyy): ");
-            this.nascimento = input.nextLine();
-            if (nascimento.isEmpty()) {
-                System.out.println("Por favor, digite uma data válida.");
-            } else {
-                break;
-            }
-        }
-
-        // Entrada para o email
-        while (true) {
-            System.out.print("Digite o email: ");
-            this.email = input.nextLine();
-            if (email.isEmpty()) {
-                System.out.println("Por favor, digite um email válido.");
-            } else {
-                break;
-            }
-        }
-
-        // Entrada para o telefone
-        while (true) {
-            System.out.print("Digite o telefone: ");
-            this.telefone = input.nextLine();
-            if (telefone.isEmpty()) {
-                System.out.println("Por favor, digite um telefone válido.");
-            } else {
-                break;
-            }
-        }
-
-        listaPaciente.add(toString());
-        System.out.println("Paciente cadastrado com sucesso!");
     }
 
-    public void menuPaciente() {
-        int entrada;
-        do {
-            System.out.println("""
-                    1. Para Cadastrar paciente
-                    2. Para Excluir paciente
-                    3. Para Lista de paciente
-                    4. Para Alterar dados paciente
-                    5. Para Agendar consulta
-                    6. Para Listar agendamentos
-                    0. Para Voltar.""");
-            entrada = input.nextInt();
-            switch (entrada) {
-                case 1:
-                    cadastraPaciente();
-                    break;
-                case 2:
-                    deletarPaciente();
-                    break;
-                case 3:
-                    getListaPaciente();
-                    break;
-                case 4:
-                    alterarPaciente();
-                    break;
-                case 5:
-                    // agendamento
-                    agendamento = new Agendar();
-                    break;
-                case 6:
-//                     Aqui você coloca o métodos agendamento
-                    break;
-            }
-        } while (entrada != 0);
-        System.out.println("Obrigado por utilizar.");
-    }
-
+    // Metodo para listar pacientes do banco de dados
     public static List<Paciente> getListaPaciente() {
-        if (listaPaciente.isEmpty()) {
-            System.out.println("Nenhum paciente cadastrado, por favor cadastre!");
+        List<Paciente> pacientes = new ArrayList<>();
+        String sql = "SELECT * FROM paciente";
 
-        } else {
-            for (String paciente : listaPaciente) {
-                System.out.printf("\n\n\n\n" + paciente);
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Paciente paciente = new Paciente();
+                paciente.idPaciente = rs.getInt("idPaciente");
+                paciente.nome = rs.getString("nome");
+                paciente.cpf = rs.getString("cpf");
+                paciente.sexo = rs.getString("sexo");
+                paciente.nascimento = rs.getString("nascimento");
+                paciente.email = rs.getString("email");
+                paciente.telefone = rs.getString("telefone");
+                pacientes.add(paciente);
             }
+
+            if (pacientes.isEmpty()) {
+                System.out.println("Nenhum paciente cadastrado no banco de dados.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return getlistaPaciente();
+        return pacientes;
     }
-    public static List<Paciente> getlistaPaciente() {
-        for (String medico : listaPaciente) {
-            System.out.printf("\n\n%s\n\n", medico);
-        }
-        return null;
-    }
-    // Métodos privados
-    private void deletarPaciente() {
-        while (true) {
-            System.out.println("Digite o número identificador para deletar (id): ");
-            int deleteId = input.nextInt();
-            if (deleteId < 1 || deleteId > listaPaciente.size()) {
-                System.out.println("Paciente não encontrado");
+
+    // Método para alterar paciente
+    public void alterarPaciente() {
+        int alterarId = getIntInput("Digite o ID do paciente para alterar: ");
+        String nomeNovo = getStringInput("Digite o novo nome (deixe em branco para não alterar): ");
+        String cpfNovo = getStringInput("Digite o novo CPF (deixe em branco para não alterar): ");
+        String sexoNovo = getStringInput("Digite o novo sexo (deixe em branco para não alterar): ");
+        String nascimentoNovo = getStringInput("Digite a nova data de nascimento (deixe em branco para não alterar): ");
+        String emailNovo = getStringInput("Digite o novo email (deixe em branco para não alterar): ");
+        String telefoneNovo = getStringInput("Digite o novo telefone (deixe em branco para não alterar): ");
+
+        StringBuilder sql = new StringBuilder("UPDATE paciente SET ");
+
+        if (!nomeNovo.isEmpty()) sql.append("nome = ?, ");
+        if (!cpfNovo.isEmpty()) sql.append("cpf = ?, ");
+        if (!sexoNovo.isEmpty()) sql.append("sexo = ?, ");
+        if (!nascimentoNovo.isEmpty()) sql.append("nascimento = ?, ");
+        if (!emailNovo.isEmpty()) sql.append("email = ?, ");
+        if (!telefoneNovo.isEmpty()) sql.append("telefone = ?, ");
+
+        sql.delete(sql.length() - 2, sql.length());  // Remove a última vírgula
+        sql.append(" WHERE idPaciente = ?");
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+
+            int index = 1;
+            if (!nomeNovo.isEmpty()) stmt.setString(index++, nomeNovo);
+            if (!cpfNovo.isEmpty()) stmt.setString(index++, cpfNovo);
+            if (!sexoNovo.isEmpty()) stmt.setString(index++, sexoNovo);
+            if (!nascimentoNovo.isEmpty()) stmt.setString(index++, nascimentoNovo);
+            if (!emailNovo.isEmpty()) stmt.setString(index++, emailNovo);
+            if (!telefoneNovo.isEmpty()) stmt.setString(index++, telefoneNovo);
+            stmt.setInt(index, alterarId);
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Paciente alterado com sucesso no banco de dados!");
             } else {
-                listaPaciente.remove(deleteId - 1);
-                System.out.println("Paciente deletado com sucesso!");
-                break;
+                System.out.println("Paciente não encontrado no banco de dados.");
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
-    private void alterarPaciente() {
-        while (true) {
-            System.out.println("Digite o número identificador para alterar (ID): ");
-            int alterarId = input.nextInt();
-            input.nextLine(); // Limpa o buffer do scanner
+    // Método para deletar paciente
+    public void deletarPaciente() {
+        int deleteId = getIntInput("Digite o ID do paciente para deletar: ");
+        String sql = "DELETE FROM paciente WHERE idPaciente = ?";
 
-            // Verifica se o ID é válido
-            if (alterarId < 1 || alterarId > listaPaciente.size()) {
-                System.out.println("Classes.Paciente não encontrado");
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, deleteId);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Paciente removido com sucesso do banco de dados!");
             } else {
-                String pacienteString = listaPaciente.get(alterarId - 1);
-                String[] dadosPaciente = pacienteString.split("\n");
-
-                System.out.println("Dados atuais do paciente:");
-                for (String dado : dadosPaciente) {
-                    System.out.println(dado);
-                }
-
-                // Menu para escolha do que alterar
-                System.out.println("""
-                        Escolha uma opção:
-                        1. Para nome do paciente
-                        2. Para CPF
-                        3. Para Sexo
-                        4. Para Data de Nascimento
-                        5. Para Email
-                        6. Para Telefone
-                        0. Para Voltar""");
-
-                int entradaAlterar = input.nextInt();
-                input.nextLine(); // Limpa o buffer do scanner
-
-                switch (entradaAlterar) {
-                    case 1:
-                        while (true) {
-                            System.out.print("Digite o novo nome: ");
-                            this.nome = input.nextLine();
-                            if (nome.isEmpty()) {
-                                System.out.println("Por favor, digite o novo nome.");
-                            } else {
-                                break;
-                            }
-                        }
-                        break;
-
-                    case 2:
-                        while (true) {
-                            System.out.print("Digite o novo CPF: ");
-                            this.cpf = input.nextLine();
-                            if (cpf.isEmpty()) {
-                                System.out.println("Por favor, digite o novo CPF.");
-                            } else {
-                                break;
-                            }
-                        }
-                        break;
-
-                    case 3:
-                        while (true) {
-                            System.out.print("Digite o novo sexo: ");
-                            this.sexo = input.nextLine();
-                            if (sexo.isEmpty()) {
-                                System.out.println("Por favor, digite o novo sexo.");
-                            } else {
-                                break;
-                            }
-                        }
-                        break;
-
-                    case 4:
-                        while (true) {
-                            System.out.print("Digite a nova data de nascimento: ");
-                            this.nascimento = input.nextLine();
-                            if (nascimento.isEmpty()) {
-                                System.out.println("Por favor, digite uma nova data válida.");
-                            } else {
-                                break;
-                            }
-                        }
-                        break;
-
-                    case 5:
-                        while (true) {
-                            System.out.print("Digite o novo email: ");
-                            this.email = input.nextLine();
-                            if (email.isEmpty()) {
-                                System.out.println("Por favor, digite um novo email.");
-                            } else {
-                                break;
-                            }
-                        }
-                        break;
-
-                    case 6:
-                        while (true) {
-                            System.out.print("Digite o novo telefone: ");
-                            this.telefone = input.nextLine();
-                            if (telefone.isEmpty()) {
-                                System.out.println("Por favor, digite um novo telefone.");
-                            } else {
-                                break;
-                            }
-                        }
-                        break;
-
-                    case 0:
-                        return; // Sai do método
-                    default:
-                        System.out.println("Opção inválida.");
-                }
-
-                // Atualiza a listaPaciente
-                listaPaciente.set(alterarId - 1, toString());
-                System.out.println("Classes.Paciente alterado com sucesso!");
-                break; // Sai do loop após a alteração
+                System.out.println("Paciente não encontrado no banco de dados.");
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
+    // Métodos auxiliares para obter input do usuário
+    private String getStringInput(String prompt) {
+        String inputStr = "";
+        while (inputStr.isEmpty()) {
+            System.out.print(prompt);
+            inputStr = input.nextLine();
+        }
+        return inputStr;
+    }
 
+    private int getIntInput(String prompt) {
+        int inputInt = -1;
+        while (inputInt < 0) {
+            System.out.print(prompt);
+            if (input.hasNextInt()) {
+                inputInt = input.nextInt();
+            } else {
+                System.out.println("Entrada inválida! Por favor, digite um número.");
+                input.nextLine(); // Limpa o buffer
+            }
+        }
+        return inputInt;
+    }
 
-    /* Metodo toString */
+    // Método toString para exibir informações do paciente
     @Override
     public String toString() {
-        return "Classes.Paciente ID: " + idPaciente +
+        return "Paciente ID: " + idPaciente +
                 "\nNome: " + nome +
                 "\nCPF: " + cpf +
                 "\nSexo: " + sexo +
                 "\nNascimento: " + nascimento +
                 "\nEmail: " + email +
-                "\nTelefone:\n " + telefone + "\n";
+                "\nTelefone: " + telefone;
+    }
+
+    // Método para exibir o menu de opções
+    public void Menu() {
+        while (true) {
+            System.out.println("""
+                    Qual opção deseja?
+                    1 - Cadastrar paciente
+                    2 - Alterar paciente
+                    3 - Deletar paciente
+                    4 - Mostrar pacientes""");
+            int opcaoMenu = input.nextInt();
+            switch (opcaoMenu) {
+                case 1:
+                    cadastraPaciente();
+                    break;
+                case 2:
+                    alterarPaciente();
+                    break;
+                case 3:
+                    deletarPaciente();
+                    break;
+                case 4:
+                    mostrarpaciente();
+                    break;
+                default:
+                    System.out.println("Obrigado por usar!");
+                    break;
+            }
+        }
+    }
+
+    // Método para mostrar pacientes
+    public void mostrarpaciente() {
+        List<Paciente> pacientes = getListaPaciente();
+        if (!pacientes.isEmpty()) {
+            for (Paciente paciente : pacientes) {
+                System.out.println(paciente);
+            }
+        }
+    }
+
+    public int getIdPaciente() {
+        return idPaciente;
     }
 }
