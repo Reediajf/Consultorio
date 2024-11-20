@@ -1,16 +1,11 @@
 package br.com.consultorio;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class Agendar {
     private int idAgendamento;
-    private Medico medico;
-    private Paciente paciente;
-    private Scanner input = new Scanner(System.in);
-    private Menu m = new Menu(input);
 
     // Construtor
     public Agendar() {
@@ -31,9 +26,11 @@ public class Agendar {
         }
 
         // Solicita ao usuário a escolha do médico
+        Scanner input = new Scanner(System.in);
         int escolhaMedico = input.nextInt();
+        Medico medico;
         if (escolhaMedico > 0 && escolhaMedico <= listaMedicos.size()) {
-            this.medico = listaMedicos.get(escolhaMedico - 1);  // Subtrai 1 para ajustar o índice
+            medico = listaMedicos.get(escolhaMedico - 1);  // Subtrai 1 para ajustar o índice
         } else {
             System.out.println("Opção inválida! Tente novamente.");
             return; // Encerra o método em caso de erro
@@ -47,8 +44,9 @@ public class Agendar {
 
         // Solicita ao usuário a escolha do paciente
         int escolhaPaciente = input.nextInt();
+        Paciente paciente;
         if (escolhaPaciente > 0 && escolhaPaciente <= listaPacientes.size()) {
-            this.paciente = listaPacientes.get(escolhaPaciente - 1);  // Subtrai 1 para ajustar o índice
+            paciente = listaPacientes.get(escolhaPaciente - 1);  // Subtrai 1 para ajustar o índice
         } else {
             System.out.println("Opção inválida! Tente novamente.");
             return; // Encerra o método em caso de erro
@@ -56,8 +54,8 @@ public class Agendar {
 
         // Exibe a confirmação do agendamento
         System.out.println("Agendamento realizado com sucesso!");
-        System.out.println("Médico: " + this.medico.toString());
-        System.out.println("Paciente: " + this.paciente.toString());
+        System.out.println("Médico: " + medico.toString());
+        System.out.println("Paciente: " + paciente.toString());
 
         // Inserir agendamento no banco de dados
         String sql = "INSERT INTO agendamento (idMedico, idPaciente) VALUES (?, ?)";
@@ -65,8 +63,8 @@ public class Agendar {
         try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/consultorio", "dt", "admin");
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, this.medico.getIdMedico());
-            stmt.setInt(2, this.paciente.getIdPaciente());
+            stmt.setInt(1, medico.getIdMedico());
+            stmt.setInt(2, paciente.getIdPaciente());
 
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected > 0) {
