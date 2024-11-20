@@ -1,8 +1,11 @@
+package br.com.consultorio;
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Medico {
-    private final ArrayList<String> listaMedica = new ArrayList<>();
+    private static final ArrayList<String> listaMedica = new ArrayList<>();
     private static int contadorId = 1;
     private int idMedico;
     private String nome;
@@ -226,11 +229,13 @@ public class Medico {
         }
     }
 
-    public void getListaMedica() {
+    public static List<Medico> getListaMedica() {
         for (String medico : listaMedica) {
             System.out.printf("\n\n%s\n\n", medico);
         }
+        return null;
     }
+
 
     @Override
     public String toString() {
@@ -241,4 +246,5 @@ public class Medico {
                 "\nPeríodo de Atendimento: " + periodoAtendimento +
                 "\nEspecialidade: " + especialidade + "\n";
     }
+
 }

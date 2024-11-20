@@ -1,8 +1,11 @@
+package br.com.consultorio;
 import java.util.ArrayList;
+
+import java.util.List;
 import java.util.Scanner;
 
 public class Paciente {
-    private final ArrayList<String> listaPaciente = new ArrayList<>();
+    private static final ArrayList<String> listaPaciente = new ArrayList<>();
     private static int contadorPaciente = 1;
     private int idPaciente;
     private String nome;
@@ -12,7 +15,7 @@ public class Paciente {
     private String email;
     private String telefone;
     private final Scanner input = new Scanner(System.in);
-
+    Agendar agendamento = new Agendar();
     // Métodos públicos
     public void cadastraPaciente() {
         this.idPaciente = contadorPaciente++;
@@ -114,7 +117,8 @@ public class Paciente {
                     alterarPaciente();
                     break;
                 case 5:
-                    // Aqui você precisa passar a lista de médicos que deseja agendar
+                    // agendamento
+                    agendamento = new Agendar();
                     break;
                 case 6:
 //                     Aqui você coloca o métodos agendamento
@@ -124,16 +128,23 @@ public class Paciente {
         System.out.println("Obrigado por utilizar.");
     }
 
-    public void getListaPaciente() {
+    public static List<Paciente> getListaPaciente() {
         if (listaPaciente.isEmpty()) {
-            System.out.println("Nenhum paciente cadastrado.");
+            System.out.println("Nenhum paciente cadastrado, por favor cadastre!");
+
         } else {
             for (String paciente : listaPaciente) {
-                System.out.printf("\n\n\n\n" + this, paciente);
+                System.out.printf("\n\n\n\n" + paciente);
             }
         }
+        return getlistaPaciente();
     }
-
+    public static List<Paciente> getlistaPaciente() {
+        for (String medico : listaPaciente) {
+            System.out.printf("\n\n%s\n\n", medico);
+        }
+        return null;
+    }
     // Métodos privados
     private void deletarPaciente() {
         while (true) {
@@ -157,7 +168,7 @@ public class Paciente {
 
             // Verifica se o ID é válido
             if (alterarId < 1 || alterarId > listaPaciente.size()) {
-                System.out.println("Paciente não encontrado");
+                System.out.println("Classes.Paciente não encontrado");
             } else {
                 String pacienteString = listaPaciente.get(alterarId - 1);
                 String[] dadosPaciente = pacienteString.split("\n");
@@ -262,16 +273,18 @@ public class Paciente {
 
                 // Atualiza a listaPaciente
                 listaPaciente.set(alterarId - 1, toString());
-                System.out.println("Paciente alterado com sucesso!");
+                System.out.println("Classes.Paciente alterado com sucesso!");
                 break; // Sai do loop após a alteração
             }
         }
     }
 
-    // Método toString
+
+
+    /* Metodo toString */
     @Override
     public String toString() {
-        return "Paciente ID: " + idPaciente +
+        return "Classes.Paciente ID: " + idPaciente +
                 "\nNome: " + nome +
                 "\nCPF: " + cpf +
                 "\nSexo: " + sexo +

@@ -1,12 +1,14 @@
+package br.com.consultorio;
+
 import java.util.Scanner;
 
-public class Main {
-    public static void main(String[] args) {
-        int opcao;
-        Scanner input = new Scanner(System.in);
-        Medico medico = new Medico();
-        Paciente paciente = new Paciente();
+public class Menu {
+    int opcao;
+    Scanner input = new Scanner(System.in);
+    Medico medico = new Medico();
+    Paciente paciente = new Paciente();
 
+    public Menu() {
         do {
             System.out.println("""
                     Escolha uma opção:
@@ -25,5 +27,11 @@ public class Main {
             }
         } while (opcao != 0);
         System.out.println("Obrigado por utilizar.");
+        init();
+    }
+
+    public void init() {
+        new Menu();
     }
 }
+
